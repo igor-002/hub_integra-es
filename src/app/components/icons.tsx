@@ -97,6 +97,14 @@ export const Icon = {
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
     </svg>
   ),
+  Trash: (p: P) => (
+    <svg {...base} {...p}>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6M14 11v6" />
+      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" />
+    </svg>
+  ),
   Logo: (p: P) => (
     <svg viewBox="0 0 32 32" fill="none" {...p}>
       <rect width="32" height="32" rx="8" fill="currentColor" />

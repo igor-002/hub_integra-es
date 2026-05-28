@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { Icon } from "./icons";
 import { Sparkline } from "./Sparkline";
 import { StatusBadge } from "./StatusBadge";
@@ -9,14 +10,27 @@ import type { IntegracaoComStatus } from "@/lib/types";
 export function IntegrationCard({
   data,
   onOpen,
+  onDelete,
 }: {
   data: IntegracaoComStatus;
   onOpen: (d: IntegracaoComStatus) => void;
+  onDelete: (d: IntegracaoComStatus) => void;
 }) {
   const s = STATUSES[data.status];
+  const [hovered, setHovered] = useState(false);
+  const [trashHover, setTrashHover] = useState(false);
+
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onOpen(data)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen(data);
+        }
+      }}
       style={{
         background: "var(--surface)",
         border: "1px solid var(--border)",
@@ -29,13 +43,16 @@ export function IntegrationCard({
         transition: "transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease",
         display: "flex",
         flexDirection: "column",
+        position: "relative",
       }}
       onMouseEnter={(e) => {
+        setHovered(true);
         e.currentTarget.style.boxShadow = "var(--shadow-lg)";
         e.currentTarget.style.transform = "translateY(-2px)";
         e.currentTarget.style.borderColor = "var(--border-strong)";
       }}
       onMouseLeave={(e) => {
+        setHovered(false);
         e.currentTarget.style.boxShadow = "var(--shadow-sm)";
         e.currentTarget.style.transform = "translateY(0)";
         e.currentTarget.style.borderColor = "var(--border)";
@@ -80,7 +97,34 @@ export function IntegrationCard({
               )}
             </div>
           </div>
-          <StatusBadge status={data.status} />
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <StatusBadge status={data.status} />
+            <button
+              aria-label="Remover integração"
+              title="Remover integração"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(data);
+              }}
+              onMouseEnter={() => setTrashHover(true)}
+              onMouseLeave={() => setTrashHover(false)}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 7,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: trashHover ? "var(--failed-soft)" : "transparent",
+                color: trashHover ? "var(--failed)" : "var(--text-faint)",
+                opacity: hovered || trashHover ? 1 : 0,
+                transition: "opacity 0.18s ease, background 0.18s ease, color 0.18s ease",
+                cursor: "pointer",
+              }}
+            >
+              <Icon.Trash width={14} height={14} />
+            </button>
+          </div>
         </div>
         <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}>{data.nome}</div>
       </div>
@@ -173,6 +217,6 @@ export function IntegrationCard({
           <div style={{ fontSize: 12, color: "var(--text)", lineHeight: 1.4 }}>{data.erro}</div>
         </div>
       )}
-    </button>
+    </div>
   );
 }

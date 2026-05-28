@@ -6,6 +6,7 @@ import { IntegrationCard } from "./components/IntegrationCard";
 import { AlertToast } from "./components/AlertToast";
 import { DetailDrawer } from "./components/DetailDrawer";
 import { NovaIntegracaoModal } from "./components/NovaIntegracaoModal";
+import { ConfirmDeleteModal } from "./components/ConfirmDeleteModal";
 import { Icon } from "./components/icons";
 import { apiUrl } from "@/lib/api";
 import { displayId } from "@/lib/format";
@@ -25,6 +26,7 @@ export default function Page() {
   const [selected, setSelected] = useState<IntegracaoComStatus | null>(null);
   const [alertExpanded, setAlertExpanded] = useState(false);
   const [showNova, setShowNova] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<IntegracaoComStatus | null>(null);
   const [running, setRunning] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [atualizadoEm, setAtualizadoEm] = useState("—");
@@ -280,7 +282,7 @@ export default function Page() {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 16 }}>
               {filtered.map((i) => (
-                <IntegrationCard key={i.id} data={i} onOpen={setSelected} />
+                <IntegrationCard key={i.id} data={i} onOpen={setSelected} onDelete={setConfirmDelete} />
               ))}
             </div>
           )}
@@ -299,6 +301,18 @@ export default function Page() {
 
       {showNova && (
         <NovaIntegracaoModal onClose={() => setShowNova(false)} onCreated={fetchData} />
+      )}
+
+      {confirmDelete && (
+        <ConfirmDeleteModal
+          data={confirmDelete}
+          onClose={() => setConfirmDelete(null)}
+          onDeleted={() => {
+            if (selected?.id === confirmDelete.id) setSelected(null);
+            setConfirmDelete(null);
+            fetchData();
+          }}
+        />
       )}
     </div>
   );
