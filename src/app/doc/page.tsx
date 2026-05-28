@@ -354,6 +354,12 @@ requests.post(
         <section style={card}>
           <H>Outras rotas da API</H>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th style={th}>Rota</th>
+                <th style={th}>Descrição</th>
+              </tr>
+            </thead>
             <tbody>
               <tr>
                 <td style={td}><Inline>GET /integracoes/api/integracoes</Inline></td>
@@ -362,6 +368,13 @@ requests.post(
               <tr>
                 <td style={td}><Inline>GET /integracoes/api/integracoes/:id/execucoes</Inline></td>
                 <td style={td}>Histórico de execuções (param <Inline>?limit=</Inline>).</td>
+              </tr>
+              <tr>
+                <td style={td}><Inline>DELETE /integracoes/api/integracoes/:id</Inline></td>
+                <td style={td}>
+                  Remove a integração do painel. <strong>Destrutivo:</strong> apaga também todo o
+                  histórico de execuções e os alertas dela.
+                </td>
               </tr>
               <tr>
                 <td style={td}><Inline>GET /integracoes/api/alertas</Inline></td>
