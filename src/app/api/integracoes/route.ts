@@ -34,13 +34,25 @@ export async function POST(req: Request) {
   const tolerancia = Number(body.tolerancia_minutos ?? 5) || 5;
   const ativo = body.ativo === undefined ? 1 : body.ativo ? 1 : 0;
 
+  let webhook: string | null = null;
+  const rawWebhook = body.webhook_disparo ? String(body.webhook_disparo).trim() : "";
+  if (rawWebhook) {
+    if (!/^https?:\/\//i.test(rawWebhook)) {
+      return NextResponse.json(
+        { erro: "webhook_disparo deve começar com http:// ou https://" },
+        { status: 400 }
+      );
+    }
+    webhook = rawWebhook;
+  }
+
   const db = getDb();
   const result = db
     .prepare(
-      `INSERT INTO integracoes (nome, cliente, tipo, descricao, cron_esperado, tolerancia_minutos, ativo)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO integracoes (nome, cliente, tipo, descricao, cron_esperado, tolerancia_minutos, ativo, webhook_disparo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
-    .run(nome, cliente, tipo, descricao, cronEsperado, tolerancia, ativo);
+    .run(nome, cliente, tipo, descricao, cronEsperado, tolerancia, ativo, webhook);
 
   const integracao = db
     .prepare("SELECT * FROM integracoes WHERE id = ?")

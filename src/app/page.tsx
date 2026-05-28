@@ -108,17 +108,18 @@ export default function Page() {
   const runNow = async (d: IntegracaoComStatus) => {
     setRunning(true);
     try {
-      await fetch(apiUrl("/api/report"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          integracao_id: d.id,
-          status: "manual",
-          registros_processados: 0,
-          disparado_por: "manual",
-        }),
-      });
+      const res = await fetch(apiUrl(`/api/integracoes/${d.id}/disparar`), { method: "POST" });
+      const json = await res.json().catch(() => ({}));
       await fetchData();
+      if (res.ok) {
+        return { ok: true, mensagem: "Disparo enviado ao worker. Aguardando reporte de conclusão." };
+      }
+      return {
+        ok: false,
+        mensagem: json.erro ?? `Falha ao disparar (HTTP ${res.status})`,
+      };
+    } catch {
+      return { ok: false, mensagem: "Erro de rede ao disparar o webhook." };
     } finally {
       setRunning(false);
     }
@@ -297,7 +298,13 @@ export default function Page() {
         setExpanded={setAlertExpanded}
       />
 
-      <DetailDrawer data={selected} onClose={() => setSelected(null)} onRunNow={runNow} running={running} />
+      <DetailDrawer
+        data={selected}
+        onClose={() => setSelected(null)}
+        onRunNow={runNow}
+        onUpdated={fetchData}
+        running={running}
+      />
 
       {showNova && (
         <NovaIntegracaoModal onClose={() => setShowNova(false)} onCreated={fetchData} />

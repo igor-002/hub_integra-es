@@ -49,6 +49,7 @@ export function NovaIntegracaoModal({
     cron_esperado: "*/15 * * * *",
     tolerancia_minutos: 5,
     ativo: true,
+    webhook_disparo: "",
   });
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -72,6 +73,7 @@ export function NovaIntegracaoModal({
           ...form,
           tipo: form.tipo.trim() || null,
           descricao: form.descricao.trim() || null,
+          webhook_disparo: form.webhook_disparo.trim() || null,
           ativo: form.ativo ? 1 : 0,
         }),
       });
@@ -298,6 +300,20 @@ export function NovaIntegracaoModal({
                 <input type="checkbox" checked={form.ativo} onChange={(e) => set("ativo", e.target.checked)} />
                 Ativa (monitorar)
               </label>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Webhook de disparo (opcional)</label>
+              <input
+                style={{ ...inputStyle, fontFamily: "var(--font-jetbrains), monospace" }}
+                value={form.webhook_disparo}
+                onChange={(e) => set("webhook_disparo", e.target.value)}
+                placeholder="https://seu-worker.exemplo.com/run"
+              />
+              <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 6, lineHeight: 1.5 }}>
+                URL que o botão <strong>Executar agora</strong> vai chamar via POST. Sem isso, o botão fica
+                desabilitado.
+              </div>
             </div>
 
             {erro && (

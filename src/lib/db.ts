@@ -29,6 +29,7 @@ function migrate(db: Database.Database) {
       cron_esperado TEXT NOT NULL,
       tolerancia_minutos INTEGER NOT NULL DEFAULT 5,
       ativo INTEGER NOT NULL DEFAULT 1,
+      webhook_disparo TEXT,
       criado_em TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
@@ -55,6 +56,12 @@ function migrate(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_exec_integ ON execucoes(integracao_id, finalizado_em);
     CREATE INDEX IF NOT EXISTS idx_alerta_integ ON alertas(integracao_id, visualizado);
   `);
+
+  // Migrações incrementais (idempotentes): SQLite não tem ADD COLUMN IF NOT EXISTS.
+  const cols = db.prepare("PRAGMA table_info(integracoes)").all() as { name: string }[];
+  if (!cols.some((c) => c.name === "webhook_disparo")) {
+    db.exec("ALTER TABLE integracoes ADD COLUMN webhook_disparo TEXT");
+  }
 }
 
 // Popula 3 integrações de exemplo só na primeira inicialização (tabela vazia)

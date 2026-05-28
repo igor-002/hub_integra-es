@@ -14,6 +14,7 @@ export interface Integracao {
   cron_esperado: string;
   tolerancia_minutos: number;
   ativo: number; // 0 | 1
+  webhook_disparo: string | null;
   criado_em: string;
 }
 

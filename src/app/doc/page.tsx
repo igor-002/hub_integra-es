@@ -164,7 +164,8 @@ Content-Type: application/json
   "descricao": "Importa pedidos a cada 15 min",
   "cron_esperado": "*/15 * * * *",
   "tolerancia_minutos": 5,
-  "ativo": 1
+  "ativo": 1,
+  "webhook_disparo": "https://worker.exemplo.com/run"
 }
 
 → 201 { "ok": true, "integracao": { "id": 4, ... } }`}</Code>
@@ -212,8 +213,57 @@ Content-Type: application/json
                 <td style={td}>não</td>
                 <td style={td}>1 = monitorada (default), 0 = pausada.</td>
               </tr>
+              <tr>
+                <td style={td}><Inline>webhook_disparo</Inline></td>
+                <td style={td}>não</td>
+                <td style={td}>
+                  URL chamada pelo botão <strong>Executar agora</strong>. Sem isso o botão fica desabilitado.
+                </td>
+              </tr>
             </tbody>
           </table>
+        </section>
+
+        {/* disparo manual */}
+        <section style={card}>
+          <H>Disparo manual (botão “Executar agora”)</H>
+          <p style={{ fontSize: 14, color: "var(--text-muted)", lineHeight: 1.6, marginTop: 0 }}>
+            Quando o usuário clica em <strong>Executar agora</strong> no painel, o Hub faz um <Inline>POST</Inline>{" "}
+            (fire-and-forget, timeout 8s) na URL cadastrada em <Inline>webhook_disparo</Inline>. Seu worker deve
+            aceitar a requisição rapidamente e processar a integração em background — quando terminar, reporta o
+            resultado normalmente em <Inline>/api/report</Inline>.
+          </p>
+          <Code>{`POST {webhook_disparo}
+Content-Type: application/json
+
+{
+  "integracao_id": 4,
+  "cliente": "Supermercado Figura",
+  "nome": "Sincronização de Pedidos",
+  "disparado_em": "2026-05-28T14:32:11.000Z",
+  "origem": "hub-manual"
+}`}</Code>
+          <ul style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7, margin: "12px 0 0", paddingLeft: 20 }}>
+            <li>
+              Resposta <strong>2xx</strong> = disparo aceito. O Hub registra uma linha{" "}
+              <Inline>status=manual</Inline> como auditoria e responde 202 ao painel.
+            </li>
+            <li>
+              Resposta <strong>não-2xx</strong> (ou timeout/rede) = o Hub registra uma execução{" "}
+              <Inline>status=erro</Inline> com a mensagem e dispara alerta <Inline>falha_execucao</Inline>.
+            </li>
+            <li>
+              Para autenticar o webhook, use HTTPS e embuta um token na própria URL (ex:{" "}
+              <Inline>https://worker.exemplo.com/run?token=xxx</Inline>).
+            </li>
+          </ul>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-muted)", margin: "16px 0 8px" }}>
+            Atualizando webhook de uma integração já existente
+          </div>
+          <Code>{`PATCH /integracoes/api/integracoes/4
+Content-Type: application/json
+
+{ "webhook_disparo": "https://worker.exemplo.com/run" }`}</Code>
         </section>
 
         {/* 2. reportar */}
@@ -368,6 +418,20 @@ requests.post(
               <tr>
                 <td style={td}><Inline>GET /integracoes/api/integracoes/:id/execucoes</Inline></td>
                 <td style={td}>Histórico de execuções (param <Inline>?limit=</Inline>).</td>
+              </tr>
+              <tr>
+                <td style={td}><Inline>PATCH /integracoes/api/integracoes/:id</Inline></td>
+                <td style={td}>
+                  Atualiza campos da integração (parcial). Aceita qualquer campo do cadastro, incluindo{" "}
+                  <Inline>webhook_disparo</Inline>.
+                </td>
+              </tr>
+              <tr>
+                <td style={td}><Inline>POST /integracoes/api/integracoes/:id/disparar</Inline></td>
+                <td style={td}>
+                  Dispara o webhook configurado. Mesma ação do botão <strong>Executar agora</strong>. Responde 202
+                  no sucesso, 422 se não tiver webhook, 502 se o webhook falhar.
+                </td>
               </tr>
               <tr>
                 <td style={td}><Inline>DELETE /integracoes/api/integracoes/:id</Inline></td>
